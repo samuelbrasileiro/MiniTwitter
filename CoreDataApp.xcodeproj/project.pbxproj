@@ -14,6 +14,8 @@
 		7E63D99C24211AC3000A8D16 /* CoreDataApp.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 7E63D99A24211AC3000A8D16 /* CoreDataApp.xcdatamodeld */; };
 		7E63D99E24211AC6000A8D16 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7E63D99D24211AC6000A8D16 /* Assets.xcassets */; };
 		7E63D9A124211AC6000A8D16 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7E63D99F24211AC6000A8D16 /* LaunchScreen.storyboard */; };
+		7E63D9A924212573000A8D16 /* Tweet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E63D9A824212573000A8D16 /* Tweet.swift */; };
+		7E63D9AB24212682000A8D16 /* TwitterUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E63D9AA24212682000A8D16 /* TwitterUser.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +28,8 @@
 		7E63D99D24211AC6000A8D16 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7E63D9A024211AC6000A8D16 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		7E63D9A224211AC6000A8D16 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7E63D9A824212573000A8D16 /* Tweet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tweet.swift; sourceTree = "<group>"; };
+		7E63D9AA24212682000A8D16 /* TwitterUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwitterUser.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,9 +69,19 @@
 				7E63D99D24211AC6000A8D16 /* Assets.xcassets */,
 				7E63D99F24211AC6000A8D16 /* LaunchScreen.storyboard */,
 				7E63D9A224211AC6000A8D16 /* Info.plist */,
-				7E63D99A24211AC3000A8D16 /* CoreDataApp.xcdatamodeld */,
+				7E63D9AC24212694000A8D16 /* Core Data */,
 			);
 			path = CoreDataApp;
+			sourceTree = "<group>";
+		};
+		7E63D9AC24212694000A8D16 /* Core Data */ = {
+			isa = PBXGroup;
+			children = (
+				7E63D99A24211AC3000A8D16 /* CoreDataApp.xcdatamodeld */,
+				7E63D9A824212573000A8D16 /* Tweet.swift */,
+				7E63D9AA24212682000A8D16 /* TwitterUser.swift */,
+			);
+			path = "Core Data";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -142,6 +156,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				7E63D99C24211AC3000A8D16 /* CoreDataApp.xcdatamodeld in Sources */,
+				7E63D9A924212573000A8D16 /* Tweet.swift in Sources */,
+				7E63D9AB24212682000A8D16 /* TwitterUser.swift in Sources */,
 				7E63D99624211AC3000A8D16 /* ViewController.swift in Sources */,
 				7E63D99224211AC3000A8D16 /* AppDelegate.swift in Sources */,
 				7E63D99424211AC3000A8D16 /* SceneDelegate.swift in Sources */,
