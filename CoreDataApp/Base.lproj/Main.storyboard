@@ -54,6 +54,7 @@
                     <connections>
                         <outlet property="clearButton" destination="36k-6W-GDI" id="bW6-GF-c0l"/>
                         <outlet property="getButton" destination="526-ce-IM9" id="GCF-2r-1vI"/>
+                        <outlet property="newUserButton" destination="ra5-R0-tC2" id="m5X-e7-pU5"/>
                         <outlet property="sendButton" destination="h84-7A-jP0" id="Q3U-k6-3GZ"/>
                     </connections>
                 </viewController>

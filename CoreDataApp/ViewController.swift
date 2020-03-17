@@ -15,6 +15,8 @@ class ViewController: UIViewController {
     
     @IBOutlet var clearButton: UIButton!
     
+    @IBOutlet var newUserButton: UIButton!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -30,39 +32,25 @@ class ViewController: UIViewController {
             
             getTweeterNameAlert()
             
-            let tweet = Tweet(context: context)
-            
-            tweet.text = "Eu não aguento mais o Daniel do BBB"
-            tweet.created = Date()
-//            let request: NSFetchRequest<TwitterUser> = TwitterUser.fetchRequest()
-//            request.predicate = NSPredicate(format: "name == %@", name)
-//            do {
-//                for user in try context.fetch(request){
-//                    print("text = \(user.name)")
-//                }
-//            } catch{
-//
-//            }
-            let user = TwitterUser(context: tweet.managedObjectContext!)
-            user.name = "Samuel"
-            user.addToTweets(tweet)
-            tweet.tweeter = user
-            
-            do{
-                try context.save()
-            } catch{
-                print(error)
-                fatalError()
-            }
         }
-        if sender == getButton{
-            let request: NSFetchRequest<TwitterUser> = TwitterUser.fetchRequest()
-            let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
-            let yesterday = NSDate(timeIntervalSinceNow: -24*60*60)
-            //request.predicate = NSPredicate(format: "created > %@", yesterday)
+        else if sender == newUserButton{
+            getNewTweeterAlert()
+        }
+        
+        else if sender == getButton{
+            let userRequest: NSFetchRequest<TwitterUser> = TwitterUser.fetchRequest()
+            
             do {
-                for tweet in try context.fetch(request){
-                    print("text = \(tweet.name)")
+                for user in try context.fetch(userRequest){
+                    print("Name: \(user.name!)")
+                    print("Tweets:")
+                    var count = 0
+                    
+                    for tweet in user.tweets ?? [] {
+                        let tweet = tweet as? Tweet
+                        count += 1
+                        print("\tTweet \(count):\n\t\t\(tweet!.text!)")
+                    }
                 }
             } catch{
                 
@@ -70,8 +58,9 @@ class ViewController: UIViewController {
             
             
             
+            
         }
-        if sender == clearButton{
+        else if sender == clearButton{
             let request1: NSFetchRequest<TwitterUser> = TwitterUser.fetchRequest()
             do {
                 for user in try context.fetch(request1){
@@ -90,6 +79,65 @@ class ViewController: UIViewController {
             }
         }
     }
+    //MARK:- Adicionar novo tweeter
+    func getNewTweeterAlert(){
+        var tweeterName = "Default"
+        let alert = UIAlertController(title: "Usuário", message: "Digite o novo nome do usuário:", preferredStyle: .alert)
+        
+        alert.addTextField { (textField) in
+            textField.placeholder = "Escreva aqui"
+            
+        }
+        alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel, handler: nil))
+        let saveAction = UIAlertAction(title: "OK", style: .default, handler: { [weak alert] (_) in
+            
+            let textField = alert?.textFields![0]
+            tweeterName = textField!.text ?? "Default"
+            
+            let context = AppDelegate.viewContext
+            let request: NSFetchRequest<TwitterUser> = TwitterUser.fetchRequest()
+            request.predicate = NSPredicate(format: "name == %@", tweeterName)
+            let requestedUsers = try? context.fetch(request)
+            if requestedUsers!.count > 0{
+                let alert = UIAlertController(title: "Atenção", message: "Já existe um usuário com este nome.", preferredStyle: .alert)
+                
+                alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: { (_) in
+                    self.getNewTweeterAlert()
+                }))
+                self.present(alert,animated: true, completion: nil)
+            }
+            else{
+                let user = TwitterUser(context: context)
+                user.name = tweeterName
+                do{
+                    try context.save()
+                } catch{
+                    print(error)
+                    fatalError()
+                }
+                let alert = UIAlertController(title: "Ótimo! ;)", message: "O novo usuário, \(tweeterName), foi criado com sucesso!", preferredStyle: .alert)
+                
+                alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
+                self.present(alert,animated: true, completion: nil)
+            }
+            
+        })
+        saveAction.isEnabled = false
+        
+        NotificationCenter.default.addObserver(forName: UITextField.textDidChangeNotification, object: alert.textFields![0], queue: OperationQueue.main) { (notification) in
+            saveAction.isEnabled = alert.textFields![0].text != ""
+        }
+        
+        alert.addAction(saveAction)
+
+        self.present(alert, animated: true, completion: nil)
+        
+    }
+    
+    
+    
+    
+    //MARK:- Fazer tweet
     func getTweeterNameAlert(){
         var tweeterName = "Default"
         let alert = UIAlertController(title: "Usuário", message: "Digite o nome do usuário que postará o tweet:", preferredStyle: .alert)
@@ -149,6 +197,8 @@ class ViewController: UIViewController {
                 tweet.text = text
                 tweet.created = Date()
                 tweet.tweeter = user
+                
+                user.addToTweets(tweet)
                 
                 do{
                     try context.save()
