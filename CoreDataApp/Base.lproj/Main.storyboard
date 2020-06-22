@@ -16,23 +16,15 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="h84-7A-jP0">
-                                <rect key="frame" x="54" y="230" width="126" height="70"/>
+                                <rect key="frame" x="20" y="230" width="126" height="70"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Fazer tweet"/>
                                 <connections>
                                     <action selector="button:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Ius-Fp-yE0"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="526-ce-IM9">
-                                <rect key="frame" x="54" y="354" width="126" height="70"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Pegar tweets"/>
-                                <connections>
-                                    <action selector="button:" destination="BYZ-38-t0r" eventType="touchUpInside" id="jlb-Iq-aKK"/>
-                                </connections>
-                            </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ra5-R0-tC2">
-                                <rect key="frame" x="258" y="230" width="126" height="70"/>
+                                <rect key="frame" x="268" y="230" width="126" height="70"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Novo Usuário"/>
                                 <connections>
@@ -40,17 +32,26 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="36k-6W-GDI">
-                                <rect key="frame" x="258" y="354" width="126" height="70"/>
+                                <rect key="frame" x="268" y="354" width="126" height="70"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Limpar tweets"/>
                                 <connections>
                                     <action selector="button:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Ug6-N5-6VE"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="526-ce-IM9">
+                                <rect key="frame" x="20" y="354" width="126" height="70"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Pegar tweets"/>
+                                <connections>
+                                    <action selector="button:" destination="BYZ-38-t0r" eventType="touchUpInside" id="jlb-Iq-aKK"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
+                    <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                     <connections>
                         <outlet property="clearButton" destination="36k-6W-GDI" id="bW6-GF-c0l"/>
                         <outlet property="getButton" destination="526-ce-IM9" id="GCF-2r-1vI"/>

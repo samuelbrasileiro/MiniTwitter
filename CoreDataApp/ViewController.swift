@@ -41,6 +41,7 @@ class ViewController: UIViewController {
         else if sender == getButton{
             //vamos fazer o request dos TwitterUsers existentes no banco
             let userRequest: NSFetchRequest<TwitterUser> = TwitterUser.fetchRequest()
+            let tweetRequest: NSFetchRequest<Tweet> = Tweet.fetchRequest()
             
             do {
                 for user in try context.fetch(userRequest){
@@ -49,11 +50,23 @@ class ViewController: UIViewController {
                     var count = 0
                     
                     //imprimir os tweets existentes do tuiteiro
+                    let order = NSSortDescriptor(key: "created", ascending: true)
+                    user.tweets?.sortedArray(using: [order])
                     for tweet in user.tweets ?? [] {
                         let tweet = tweet as? Tweet
                         count += 1
                         print("\tTweet \(count):\n\t\t\(tweet!.text!)")
                     }
+                }
+            } catch{
+                print(error)
+                fatalError()
+            }
+            do {
+                for tweet in try context.fetch(tweetRequest){
+                    print("Text: \(tweet.text!)")
+                    print("\tCreator: \((tweet.tweeter?.name)!)")
+                    
                 }
             } catch{
                 print(error)
@@ -75,16 +88,18 @@ class ViewController: UIViewController {
             
             }
             //OBS EU DETERMINEI NO ARQUIVO XCDATAMODELD A DELECAO DOS USUARIOS COMO CASCADE, OU SEJA DELETA TODOS OS TWEETS QUANDO SEU USUARIO É DELETADO, OU SEJA ESSA PARTE DE BAIXO É INUTIL
-            let request2: NSFetchRequest<Tweet> = Tweet.fetchRequest()
-            do {
-                for tweet in try context.fetch(request2){
-                    context.delete(tweet)
-                }
-            } catch{
-                
-            }
+//            let request2: NSFetchRequest<Tweet> = Tweet.fetchRequest()
+//            do {
+//                for tweet in try context.fetch(request2){
+//                    context.delete(tweet)
+//                }
+//            } catch{
+//                
+//            }
         }
     }
+    
+    
     //MARK:- Adicionar novo tweeter
     func getNewTweeterAlert(){
         var tweeterName = "Default"
