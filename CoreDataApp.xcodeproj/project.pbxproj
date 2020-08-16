@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		350A286124E9DCE800E96756 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350A286024E9DCE800E96756 /* CloudKit.framework */; };
+		350A286324E9EA9100E96756 /* TweetTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 350A286224E9EA9100E96756 /* TweetTableViewCell.swift */; };
+		350A286524E9F6A200E96756 /* CloudViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 350A286424E9F6A200E96756 /* CloudViewController.swift */; };
 		7E63D99224211AC3000A8D16 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E63D99124211AC3000A8D16 /* AppDelegate.swift */; };
 		7E63D99424211AC3000A8D16 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E63D99324211AC3000A8D16 /* SceneDelegate.swift */; };
 		7E63D99624211AC3000A8D16 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E63D99524211AC3000A8D16 /* ViewController.swift */; };
@@ -19,6 +22,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		350A285E24E9DC0E00E96756 /* CoreDataApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CoreDataApp.entitlements; sourceTree = "<group>"; };
+		350A286024E9DCE800E96756 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
+		350A286224E9EA9100E96756 /* TweetTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweetTableViewCell.swift; sourceTree = "<group>"; };
+		350A286424E9F6A200E96756 /* CloudViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudViewController.swift; sourceTree = "<group>"; };
 		7E63D98E24211AC3000A8D16 /* CoreDataApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CoreDataApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E63D99124211AC3000A8D16 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7E63D99324211AC3000A8D16 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -37,17 +44,27 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				350A286124E9DCE800E96756 /* CloudKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		350A285F24E9DCE800E96756 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				350A286024E9DCE800E96756 /* CloudKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		7E63D98524211AC3000A8D16 = {
 			isa = PBXGroup;
 			children = (
 				7E63D99024211AC3000A8D16 /* CoreDataApp */,
 				7E63D98F24211AC3000A8D16 /* Products */,
+				350A285F24E9DCE800E96756 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -62,10 +79,13 @@
 		7E63D99024211AC3000A8D16 /* CoreDataApp */ = {
 			isa = PBXGroup;
 			children = (
+				350A285E24E9DC0E00E96756 /* CoreDataApp.entitlements */,
 				7E63D99124211AC3000A8D16 /* AppDelegate.swift */,
+				350A286224E9EA9100E96756 /* TweetTableViewCell.swift */,
 				7E63D99324211AC3000A8D16 /* SceneDelegate.swift */,
 				7E63D99524211AC3000A8D16 /* ViewController.swift */,
 				7E63D99724211AC3000A8D16 /* Main.storyboard */,
+				350A286424E9F6A200E96756 /* CloudViewController.swift */,
 				7E63D99D24211AC6000A8D16 /* Assets.xcassets */,
 				7E63D99F24211AC6000A8D16 /* LaunchScreen.storyboard */,
 				7E63D9A224211AC6000A8D16 /* Info.plist */,
@@ -157,10 +177,12 @@
 			files = (
 				7E63D99C24211AC3000A8D16 /* CoreDataApp.xcdatamodeld in Sources */,
 				7E63D9A924212573000A8D16 /* Tweet.swift in Sources */,
+				350A286524E9F6A200E96756 /* CloudViewController.swift in Sources */,
 				7E63D9AB24212682000A8D16 /* TwitterUser.swift in Sources */,
 				7E63D99624211AC3000A8D16 /* ViewController.swift in Sources */,
 				7E63D99224211AC3000A8D16 /* AppDelegate.swift in Sources */,
 				7E63D99424211AC3000A8D16 /* SceneDelegate.swift in Sources */,
+				350A286324E9EA9100E96756 /* TweetTableViewCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -304,6 +326,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = CoreDataApp/CoreDataApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = P63952MS7L;
 				INFOPLIST_FILE = CoreDataApp/Info.plist;
@@ -322,6 +345,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = CoreDataApp/CoreDataApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = P63952MS7L;
 				INFOPLIST_FILE = CoreDataApp/Info.plist;

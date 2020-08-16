@@ -1,8 +1,8 @@
 //
-//  ViewController.swift
+//  CloudViewController.swift
 //  CoreDataApp
 //
-//  Created by Samuel Brasileiro on 17/03/20.
+//  Created by Samuel Brasileiro on 16/08/20.
 //  Copyright © 2020 Samuel Brasileiro. All rights reserved.
 //
 
@@ -10,16 +10,27 @@ import UIKit
 import CoreData
 import CloudKit
 
+class TweetCloud{
+    let text: String
+    let user: String
+    init(user: String, text: String) {
+        self.text = text
+        self.user = user
+    }
+}
 
-
-class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class CloudViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+    
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return tweets.count
     }
+    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         
         return 105
     }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "TweetTableViewCell", for: indexPath) as? TweetTableViewCell else{
             fatalError("Can't dequeue tweet table view cell")
@@ -35,6 +46,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     var tweets: [Tweet] = []
     var users: [TwitterUser] = []
+    let privateDatabase = CKContainer(identifier: "iCloud.samuel.CoreDataApp").privateCloudDatabase
     
     @IBOutlet var sendButton: UIButton!
     
@@ -46,28 +58,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     @IBOutlet var tweetsTableView: UITableView!
     
-    
-    let privateDatabase = CKContainer(identifier: "iCloud.samuel.CoreDataApp").privateCloudDatabase
-    
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        tweetsTableView.backgroundColor = .systemGray6
-        tweetsTableView.layer.cornerRadius = 10
-        tweetsTableView.layer.masksToBounds = true
-        
-        tweetsTableView.delegate = self
-        tweetsTableView.dataSource = self
-        
-        tweetsTableView.tableFooterView = UIView(frame: .zero)
-    }
-        
-    
     @IBAction func button(_ sender: UIButton) {
-        // to access persistent container context
-        let context = AppDelegate.viewContext
-        
         if sender == sendButton{
             getTweeterNameAlert()
             
@@ -79,84 +70,13 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         else if sender == getButton{
             //vamos fazer o request dos TwitterUsers existentes no banco
-            let userRequest: NSFetchRequest<TwitterUser> = TwitterUser.fetchRequest()
-            let tweetRequest: NSFetchRequest<Tweet> = Tweet.fetchRequest()
-            
-            do {
-                for user in try context.fetch(userRequest){
-                    
-                    users.append(user)
-                    
-                    print("Name: \(user.name!)")
-                    print("Tweets:")
-                    var count = 0
-                    
-                    //imprimir os tweets existentes do tuiteiro
-                    let order = NSSortDescriptor(key: "created", ascending: true)
-                    user.tweets?.sortedArray(using: [order])
-                    for tweet in user.tweets ?? [] {
-                        guard let tweet = tweet as? Tweet else{
-                            fatalError()
-                        }
-                        
-                        
-                        
-                        count += 1
-                        print("\tTweet \(count):\n\t\t\(tweet.text!)")
-                    }
-                }
-            } catch{
-                print(error)
-                fatalError()
-            }
-            do {
-                
-                tweetRequest.sortDescriptors = [NSSortDescriptor(key: "created", ascending: true)]
-                
-                tweets = []
-                
-                for tweet in try context.fetch(tweetRequest){
-
-                    tweets.append(tweet)
-                    
-                    tweetsTableView.reloadData()
-                    print("Text: \(tweet.text!)")
-                    print("\tCreator: \((tweet.tweeter?.name)!)")
-                    
-                }
-            } catch{
-                print(error)
-                fatalError()
-            }
-            
-            
-            
             
         }
         else if sender == clearButton{
-            //vamos deletar todos os usuarios e todos os tweets
-            let request1: NSFetchRequest<TwitterUser> = TwitterUser.fetchRequest()
-            do {
-                for user in try context.fetch(request1){
-                    context.delete(user)
-                }
-            } catch{
             
-            }
-            //OBS EU DETERMINEI NO ARQUIVO XCDATAMODELD A DELECAO DOS USUARIOS COMO CASCADE, OU SEJA DELETA TODOS OS TWEETS QUANDO SEU USUARIO É DELETADO, OU SEJA ESSA PARTE DE BAIXO É INUTIL
-//            let request2: NSFetchRequest<Tweet> = Tweet.fetchRequest()
-//            do {
-//                for tweet in try context.fetch(request2){
-//                    context.delete(tweet)
-//                }
-//            } catch{
-//                
-//            }
         }
     }
     
-    
-    //MARK:- Adicionar novo tweeter
     func getNewTweeterAlert(){
         var tweeterName = "Default"
         //uma view de alerta para escrever o nome do novo user
@@ -193,38 +113,70 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     func checkExistenceUser(tweeterName: String){
-        let context = AppDelegate.viewContext
-        //vou fazer um request dos users existentes para checar se ja existe um com nome igual
-        let request: NSFetchRequest<TwitterUser> = TwitterUser.fetchRequest()
         
-        request.predicate = NSPredicate(format: "name == %@", tweeterName)
-        let requestedUsers = try? context.fetch(request)
-        if requestedUsers!.count > 0{
-            //se ja tem um user com o mesmo nome, mando um alerta para cancelar ou botar outro nome
-            let alert = UIAlertController(title: "Atenção", message: "Já existe um usuário com este nome.", preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: { (_) in
-                //chamar essa funcao de novo
-                self.getNewTweeterAlert()
-            }))
-            self.present(alert,animated: true, completion: nil)
-        }
-        else{
-            //se nao tiver um user c esse nome, crio um
-            let user = TwitterUser(context: context)
-            user.name = tweeterName
-            do{
-                //isso aqui eh pra salvar o contexto
-                try context.save()
-            } catch{
-                print(error)
-                fatalError()
+        //vou fazer um request dos users existentes para checar se ja existe um com nome igual
+        
+        
+        let predicate = NSPredicate(format: "name == %@", tweeterName)
+        
+        let query = CKQuery(recordType: "TweetUser", predicate: predicate)
+        
+        
+        let operation = CKQueryOperation(query: query)
+        
+        var count = 0
+        operation.recordFetchedBlock = { record in
+            DispatchQueue.main.async {
+                count += 1
+                print(record["name"] ?? "iih")
             }
-            let alert = UIAlertController(title: "Ótimo! ;)", message: "O novo usuário, \(tweeterName), foi criado com sucesso!", preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
-            self.present(alert,animated: true, completion: nil)
         }
+        
+        operation.queryCompletionBlock = { cursor, error in
+            
+            DispatchQueue.main.async {
+                print("here")
+                
+                if count > 0{
+                    let alert = UIAlertController(title: "Atenção", message: "Já existe um usuário com este nome na nuvem.", preferredStyle: .alert)
+                        
+                        alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: { (_) in
+                            //chamar essa funcao de novo
+                            self.getNewTweeterAlert()
+                        }))
+                    self.present(alert,animated: true, completion: nil)
+                }
+                else{
+                    let record = CKRecord(recordType: "TweetUser")
+                    record.setValue(tweeterName, forKey: "name")
+                    
+                    self.privateDatabase.save(record) { (savedRecord, error) in
+                        
+                        DispatchQueue.main.async {
+                            if error == nil {
+                                let alert = UIAlertController(title: "Ótimo! ;)", message: "O novo usuário, \(tweeterName), foi criado com sucesso!", preferredStyle: .alert)
+                                
+                                alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
+                                self.present(alert,animated: true, completion: nil)
+                            } else {
+                                let alert = UIAlertController(title: "Eita", message: "Deu erro em alguma coisa...\n" + error!.localizedDescription, preferredStyle: .alert)
+                                
+                                alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
+                                self.present(alert,animated: true, completion: nil)
+                            }
+                        }
+                        
+                    }
+                    
+                    
+                }
+                
+            }
+            
+        }
+        
+        privateDatabase.add(operation)
+        
     }
     
     
@@ -330,5 +282,5 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         
     }
-}
 
+}
