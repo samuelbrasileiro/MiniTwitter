@@ -8,11 +8,9 @@
 
 import UIKit
 import CoreData
-import CloudKit
 
 
-
-class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class CoreDataViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return tweets.count
     }
@@ -26,7 +24,13 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
         let tweet = tweets[indexPath.row]
         print(tweet)
+        
+        let df = DateFormatter()
+        df.dateFormat = "HH:mm dd/MM/yy"
+        cell.dateLabel.text = df.string(from: tweet.created!)
+        
         cell.tweetText.text = tweet.text!
+        
         cell.userName.text = tweet.tweeter?.name
         
         
@@ -46,8 +50,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     @IBOutlet var tweetsTableView: UITableView!
     
-    
-    let privateDatabase = CKContainer(identifier: "iCloud.samuel.CoreDataApp").privateCloudDatabase
+    @IBOutlet var consoleIndicator: UIActivityIndicatorView!
     
     
     override func viewDidLoad() {
@@ -61,6 +64,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         tweetsTableView.dataSource = self
         
         tweetsTableView.tableFooterView = UIView(frame: .zero)
+        
+        consoleIndicator.hidesWhenStopped = true
+        consoleIndicator.stopAnimating()
     }
         
     
@@ -78,6 +84,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
         
         else if sender == getButton{
+            consoleIndicator.startAnimating()
             //vamos fazer o request dos TwitterUsers existentes no banco
             let userRequest: NSFetchRequest<TwitterUser> = TwitterUser.fetchRequest()
             let tweetRequest: NSFetchRequest<Tweet> = Tweet.fetchRequest()
@@ -129,20 +136,32 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 fatalError()
             }
             
-            
+            consoleIndicator.stopAnimating()
             
             
         }
         else if sender == clearButton{
             //vamos deletar todos os usuarios e todos os tweets
-            let request1: NSFetchRequest<TwitterUser> = TwitterUser.fetchRequest()
-            do {
-                for user in try context.fetch(request1){
-                    context.delete(user)
-                }
-            } catch{
+            let alert = UIAlertController(title: "Deletar", message: "Deseja realmente deletar o banco de dados do seu dispositivo?", preferredStyle: .alert)
             
-            }
+            //add botao de cancelar
+            alert.addAction(UIAlertAction(title: "Não", style: .cancel, handler: nil))
+            //add botao de salvar
+            let saveAction = UIAlertAction(title: "Sim", style: .default, handler: { Void in
+                
+                let request1: NSFetchRequest<TwitterUser> = TwitterUser.fetchRequest()
+                do {
+                    for user in try context.fetch(request1){
+                        context.delete(user)
+                    }
+                } catch{
+                
+                }
+                
+            })
+            alert.addAction(saveAction)
+            self.present(alert, animated: true, completion: nil)
+            
             //OBS EU DETERMINEI NO ARQUIVO XCDATAMODELD A DELECAO DOS USUARIOS COMO CASCADE, OU SEJA DELETA TODOS OS TWEETS QUANDO SEU USUARIO É DELETADO, OU SEJA ESSA PARTE DE BAIXO É INUTIL
 //            let request2: NSFetchRequest<Tweet> = Tweet.fetchRequest()
 //            do {

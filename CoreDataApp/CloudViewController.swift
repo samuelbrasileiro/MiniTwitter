@@ -7,15 +7,13 @@
 //
 
 import UIKit
-import CoreData
 import CloudKit
-
-
 
 class CloudViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        
         return tweets.count
     }
     
@@ -29,16 +27,20 @@ class CloudViewController: UIViewController, UITableViewDelegate, UITableViewDat
             fatalError("Can't dequeue tweet table view cell")
         }
         let tweet = tweets[indexPath.row]
-        let user = users[indexPath.row]
+        let user = usersByTweetID[tweet.recordID.recordName]
+        let df = DateFormatter()
+        df.dateFormat = "HH:mm dd/MM/yy"
+        cell.dateLabel.text = df.string(from: tweet.creationDate!)
+        
         cell.tweetText.text = tweet["text"]!
-        cell.userName.text = user["name"]!
+        cell.userName.text = user!["name"]!
         
         
         return cell
     }
     
     var tweets: [CKRecord] = []
-    var users: [CKRecord] = []
+    var usersByTweetID: [String:CKRecord] = [:]
     let privateDatabase = CKContainer(identifier: "iCloud.samuel.CoreDataApp").privateCloudDatabase
     
     @IBOutlet var sendButton: UIButton!
@@ -51,6 +53,8 @@ class CloudViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     @IBOutlet var tweetsTableView: UITableView!
     
+    @IBOutlet var consoleIndicator: UIActivityIndicatorView!
+    
     override func viewDidLoad() {
         tweetsTableView.backgroundColor = .systemGray6
         tweetsTableView.layer.cornerRadius = 10
@@ -60,6 +64,8 @@ class CloudViewController: UIViewController, UITableViewDelegate, UITableViewDat
         tweetsTableView.dataSource = self
         
         tweetsTableView.tableFooterView = UIView(frame: .zero)
+        
+        consoleIndicator.hidesWhenStopped = true
     }
     
     @IBAction func button(_ sender: UIButton) {
@@ -74,35 +80,41 @@ class CloudViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
         else if sender == getButton{
             //vamos fazer o request dos TwitterUsers existentes no banco
+            consoleIndicator.startAnimating()
+            
+            tweets.removeAll()
+            usersByTweetID.removeAll()
             
             let predicate = NSPredicate(value: true)
             
             let query = CKQuery(recordType: "Tweet", predicate: predicate)
             
-            tweets.removeAll()
+            
             
             query.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
             
             let operation = CKQueryOperation(query: query)
             
-            users.removeAll()
-            
             
             operation.recordFetchedBlock = { record in
                 
-                    print("boom")
-                let ref = record["tweeter"] as! CKRecord.Reference
-                self.privateDatabase.fetch(withRecordID: ref.recordID, completionHandler: {userRecord, error in
+                DispatchQueue.main.async{
+                    
+                    
+                    let ref = record["tweeter"] as! CKRecord.Reference
+                    self.privateDatabase.fetch(withRecordID: ref.recordID, completionHandler: {userRecord, error in
                         
                         DispatchQueue.main.async{
-                            print("abc")
                             self.tweets.append(record)
-                            self.users.append(userRecord!)
+                            self.usersByTweetID[record.recordID.recordName] = userRecord
+                            
+                            self.tweets.sort{$0.creationDate!>$1.creationDate!}
+                            
                             self.tweetsTableView.reloadData()
                         }
                     })
                     
-                    
+                }
                 
                 
             }
@@ -111,7 +123,7 @@ class CloudViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 
                 DispatchQueue.main.async {
                     
-                    
+                    self.consoleIndicator.stopAnimating()
                     
                 }
                 
@@ -121,7 +133,18 @@ class CloudViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
         }
         else if sender == clearButton{
+            let alert = UIAlertController(title: "Deletar", message: "Deseja realmente deletar o banco de dados da nuvem?", preferredStyle: .alert)
             
+            //add botao de cancelar
+            alert.addAction(UIAlertAction(title: "Não", style: .cancel, handler: nil))
+            //add botao de salvar
+            let saveAction = UIAlertAction(title: "Sim", style: .default, handler: { (_) in
+                //chega aqui se o botao de salvar foi apertado
+                
+                
+            })
+            alert.addAction(saveAction)
+            self.present(alert, animated: true, completion: nil)
         }
     }
     
