@@ -10,14 +10,7 @@ import UIKit
 import CoreData
 import CloudKit
 
-class TweetCloud{
-    let text: String
-    let user: String
-    init(user: String, text: String) {
-        self.text = text
-        self.user = user
-    }
-}
+
 
 class CloudViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
@@ -36,16 +29,16 @@ class CloudViewController: UIViewController, UITableViewDelegate, UITableViewDat
             fatalError("Can't dequeue tweet table view cell")
         }
         let tweet = tweets[indexPath.row]
-        print(tweet)
-        cell.tweetText.text = tweet.text!
-        cell.userName.text = tweet.tweeter?.name
+        let user = users[indexPath.row]
+        cell.tweetText.text = tweet["text"]!
+        cell.userName.text = user["name"]!
         
         
         return cell
     }
     
-    var tweets: [Tweet] = []
-    var users: [TwitterUser] = []
+    var tweets: [CKRecord] = []
+    var users: [CKRecord] = []
     let privateDatabase = CKContainer(identifier: "iCloud.samuel.CoreDataApp").privateCloudDatabase
     
     @IBOutlet var sendButton: UIButton!
@@ -58,6 +51,17 @@ class CloudViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     @IBOutlet var tweetsTableView: UITableView!
     
+    override func viewDidLoad() {
+        tweetsTableView.backgroundColor = .systemGray6
+        tweetsTableView.layer.cornerRadius = 10
+        tweetsTableView.layer.masksToBounds = true
+        
+        tweetsTableView.delegate = self
+        tweetsTableView.dataSource = self
+        
+        tweetsTableView.tableFooterView = UIView(frame: .zero)
+    }
+    
     @IBAction func button(_ sender: UIButton) {
         if sender == sendButton{
             getTweeterNameAlert()
@@ -65,11 +69,55 @@ class CloudViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
         else if sender == newUserButton{
             getNewTweeterAlert()
-        
+            
         }
-        
+            
         else if sender == getButton{
             //vamos fazer o request dos TwitterUsers existentes no banco
+            
+            let predicate = NSPredicate(value: true)
+            
+            let query = CKQuery(recordType: "Tweet", predicate: predicate)
+            
+            tweets.removeAll()
+            
+            query.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+            
+            let operation = CKQueryOperation(query: query)
+            
+            users.removeAll()
+            
+            
+            operation.recordFetchedBlock = { record in
+                
+                    print("boom")
+                let ref = record["tweeter"] as! CKRecord.Reference
+                self.privateDatabase.fetch(withRecordID: ref.recordID, completionHandler: {userRecord, error in
+                        
+                        DispatchQueue.main.async{
+                            print("abc")
+                            self.tweets.append(record)
+                            self.users.append(userRecord!)
+                            self.tweetsTableView.reloadData()
+                        }
+                    })
+                    
+                    
+                
+                
+            }
+            
+            operation.queryCompletionBlock = { cursor, error in
+                
+                DispatchQueue.main.async {
+                    
+                    
+                    
+                }
+                
+            }
+            
+            privateDatabase.add(operation)
             
         }
         else if sender == clearButton{
@@ -107,7 +155,7 @@ class CloudViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
         
         alert.addAction(saveAction)
-
+        
         self.present(alert, animated: true, completion: nil)
         
     }
@@ -119,15 +167,15 @@ class CloudViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         let predicate = NSPredicate(format: "name == %@", tweeterName)
         
-        let query = CKQuery(recordType: "TweetUser", predicate: predicate)
+        let query = CKQuery(recordType: "TwitterUser", predicate: predicate)
         
         
         let operation = CKQueryOperation(query: query)
         
-        var count = 0
+        var existed = false
         operation.recordFetchedBlock = { record in
             DispatchQueue.main.async {
-                count += 1
+                existed = true
                 print(record["name"] ?? "iih")
             }
         }
@@ -135,19 +183,18 @@ class CloudViewController: UIViewController, UITableViewDelegate, UITableViewDat
         operation.queryCompletionBlock = { cursor, error in
             
             DispatchQueue.main.async {
-                print("here")
                 
-                if count > 0{
+                if existed{
                     let alert = UIAlertController(title: "Atenção", message: "Já existe um usuário com este nome na nuvem.", preferredStyle: .alert)
-                        
-                        alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: { (_) in
-                            //chamar essa funcao de novo
-                            self.getNewTweeterAlert()
-                        }))
+                    
+                    alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: { (_) in
+                        //chamar essa funcao de novo
+                        self.getNewTweeterAlert()
+                    }))
                     self.present(alert,animated: true, completion: nil)
                 }
                 else{
-                    let record = CKRecord(recordType: "TweetUser")
+                    let record = CKRecord(recordType: "TwitterUser")
                     record.setValue(tweeterName, forKey: "name")
                     
                     self.privateDatabase.save(record) { (savedRecord, error) in
@@ -199,6 +246,7 @@ class CloudViewController: UIViewController, UITableViewDelegate, UITableViewDat
             let textField = alert?.textFields![0]
             tweeterName = textField!.text ?? "Default"
             //fazer o alerta para pegar o texto
+
             self.getTweetAlert(tweeterName: tweeterName)
             
         })
@@ -209,78 +257,108 @@ class CloudViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
         
         alert.addAction(saveAction)
-
+        
         self.present(alert, animated: true, completion: nil)
         
     }
     
     func getTweetAlert(tweeterName: String){
-
-        let context = AppDelegate.viewContext
-        //fazer um request dos usuarios
-        let request: NSFetchRequest<TwitterUser> = TwitterUser.fetchRequest()
-        request.predicate = NSPredicate(format: "name == %@", tweeterName)
-        let requestedUsers = try? context.fetch(request)
         
-        if requestedUsers!.count == 0{
-            //se nao existir usuario c esse nome, tentar de novo
-            let alert = UIAlertController(title: "Atenção", message: "Não existe usuário com esse nome.", preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: {(_) in
-                self.getTweeterNameAlert()
-            }))
-            self.present(alert,animated: true, completion: nil)
-        }
-        else{
-            //se existir, continuamos e criamos outro alerta com um espaço de texto para digitar o tweet
-            let alert = UIAlertController(title: "Tweet", message: "Escreva o tweet:\n\n\n\n\n\n\n\n", preferredStyle: .alert)
-            
-            let textView = UITextView(frame: CGRect(x: 10, y: 80, width: 250, height: 100))
-            textView.layer.cornerRadius = 5
-            textView.layer.masksToBounds = true
-            
-            textView.textContainerInset = UIEdgeInsets.init(top: 8, left: 5, bottom: 8, right: 5)
-            
-            let saveAction = UIAlertAction(title: "OK", style: .default, handler: { (action) in
-                //se clicar no botao de salvar, cadastramos o tweet no banco, e ligamos ao relacionamento de tweet-usuario
-                let text = textView.text!
-                let user = requestedUsers![0]
-                let tweet = Tweet(context: context)
-                
-                tweet.text = text
-                tweet.created = Date()
-                tweet.tweeter = user
-                
-                user.addToTweets(tweet)
-                
-                do{
-                    //salvamos o contexto
-                    try context.save()
-                } catch{
-                    print(error)
-                    fatalError()
-                }
-                
-            })
-            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
-            
-            saveAction.isEnabled = false
-            NotificationCenter.default.addObserver(forName: UITextView.textDidChangeNotification, object: textView, queue: OperationQueue.main) { (notification) in
-                saveAction.isEnabled = textView.text != ""
+        let predicate = NSPredicate(format: "name == %@", tweeterName)
+        
+        let query = CKQuery(recordType: "TwitterUser", predicate: predicate)
+        
+        
+        let operation = CKQueryOperation(query: query)
+        
+        var existed = false
+        
+        var user: CKRecord?
+        
+        operation.recordFetchedBlock = { record in
+            DispatchQueue.main.async {
+                existed = true
+                user = record
             }
-            
-            textView.backgroundColor = UIColor.clear
-            alert.view.addSubview(textView)
-
-            alert.addAction(saveAction)
-            alert.addAction(cancelAction)
-
-            self.present(alert, animated: true, completion: nil)
-            
         }
-
         
+        operation.queryCompletionBlock = { cursor, error in
+            
+            DispatchQueue.main.async {
+                
+                if !existed{
+                    //se nao existir usuario c esse nome, tentar de novo
+                    let alert = UIAlertController(title: "Atenção", message: "Não existe usuário com esse nome.", preferredStyle: .alert)
+                    
+                    alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: {(_) in
+                        self.getTweeterNameAlert()
+                    }))
+                    self.present(alert,animated: true, completion: nil)
+                }
+                else{
+                    //se existir, continuamos e criamos outro alerta com um espaço de texto para digitar o tweet
+                    let alert = UIAlertController(title: "Tweet", message: "Escreva o tweet:\n\n\n\n\n\n\n\n", preferredStyle: .alert)
+                    
+                    let textView = UITextView(frame: CGRect(x: 10, y: 80, width: 250, height: 100))
+                    textView.layer.cornerRadius = 5
+                    textView.layer.masksToBounds = true
+                    
+                    textView.textContainerInset = UIEdgeInsets.init(top: 8, left: 5, bottom: 8, right: 5)
+                    
+                    let saveAction = UIAlertAction(title: "OK", style: .default, handler: { (action) in
+                        //se clicar no botao de salvar, cadastramos o tweet no banco, e ligamos ao relacionamento de tweet-usuario
+                        let text = textView.text!
+                        
+                        let record = CKRecord(recordType: "Tweet")
+                        record.setValue(text, forKey: "text")
+                        
+                        let reference = CKRecord.Reference(record: user!, action: .deleteSelf)
+                        record.setValue(reference, forKey: "tweeter")
+                        self.privateDatabase.save(record) { (savedRecord, error) in
+                            
+                            DispatchQueue.main.async {
+                                if error == nil {
+                                    let alert = UIAlertController(title: "Tweetaste!", message: "Recarregue para atualizar.", preferredStyle: .alert)
+                                    
+                                    alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
+                                    self.present(alert,animated: true, completion: nil)
+                                } else {
+                                    let alert = UIAlertController(title: "Eita", message: "Deu erro em alguma coisa...\n" + error!.localizedDescription, preferredStyle: .alert)
+                                    
+                                    alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
+                                    self.present(alert,animated: true, completion: nil)
+                                }
+                                
+                            }
+                        }
+                        
+                        
+                        
+                    })
+                    let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+                    
+                    saveAction.isEnabled = false
+                    NotificationCenter.default.addObserver(forName: UITextView.textDidChangeNotification, object: textView, queue: OperationQueue.main) { (notification) in
+                        saveAction.isEnabled = textView.text != ""
+                    }
+                    
+                    textView.backgroundColor = UIColor.clear
+                    alert.view.addSubview(textView)
+                    
+                    alert.addAction(saveAction)
+                    alert.addAction(cancelAction)
+                    
+                    self.present(alert, animated: true, completion: nil)
+                    
+                }
+            }
+        }
+        
+        privateDatabase.add(operation)
         
     }
-
+    
+    
+    
+    
 }
